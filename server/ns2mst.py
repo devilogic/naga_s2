@@ -40,10 +40,21 @@ def del_client_by_hostport(hostport):
     """删除客户端"""
     try:
         g_client_lock.acquire()
-        for tt in g_tkcltab:
-            array = g_tkcltab[tt]
-            dict(array).
-        list().append(client_value)
+        
+        if len(g_ckcltab) == 0:
+            return
+            
+        # 遍历所有任务类型
+        for task_type in g_tkcltab:
+            client_array = g_tkcltab[task_type]
+            # 如果为空则整只删除这个任务类型
+            if len(client_array):
+                dict(g_tkcltab).pop(task_type)
+            
+            # 遍历所有再当前任务类型下的 客户端列表
+            for client_address in client_array:
+                if client_address == hostport:
+                    dict(client_array).pop(client_address)
     except BaseException, e:
         g_ns2log.exception(e.message)
     finally:
@@ -52,6 +63,29 @@ def del_client_by_hostport(hostport):
 #----------------------------------------------------------------------
 def find_client_by_hostport(hostport):
     """通过ip＋端口寻找客户端"""
+    try:
+        g_client_lock.acquire()
+        
+        if len(g_ckcltab) == 0:
+            return False
+            
+        # 遍历所有任务类型
+        for task_type in g_tkcltab:
+            client_array = g_tkcltab[task_type]
+            # 如果为空则整只删除这个任务类型
+            if len(client_array):
+                return False
+            
+            # 遍历所有再当前任务类型下的 客户端列表
+            for client_address in client_array:
+                if client_address == hostport:
+                    return True
+                
+    except BaseException, e:
+        g_ns2log.exception(e.message)
+        return False
+    finally:
+        g_client_lock.release()
     
     
     
@@ -85,8 +119,8 @@ class Ns2Master(Factory):
             client_address = "%s:%d" % (self.transport.client[0], self.transport.client[1])
             client_value[client_address] = client_sign
             
-            
-            
+            # 新的客户端
+            new_client(client_value)
             
         except BaseException, e:
             g_ns2log.exception(e.message)
