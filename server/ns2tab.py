@@ -69,6 +69,7 @@ class NS2_TASK_TAB:
     ARGV_FILES = 8                # 所需的文件支持md5队列,使用','号分割
     RESULT = 9                    # 参数返回的结果
     RESULT_FILES = 10             # 参数返回的文件md5队列,使用','号分割
+    PROCESS_BAR = 11              # 进度条
     
     # 表名
     task_tab = ('id', 
@@ -81,17 +82,20 @@ class NS2_TASK_TAB:
                 'argv',
                 'argv_files',
                 'result',
-                'result_count')
+                'result_files',
+                'process_bar')
 
 ########################################################################
 class NS2_TASK_STATUS:
     """任务状态"""
     PREPARE = 0                   # 任务正在准备
     READY = 1                     # 任务已经准备完毕,等待获取
-    PROCESS = 2                   # 任务正在处理中
-    EXCEPTION = 3                 # 任务处理发生异常
-    OVER = 4                      # 任务已经处理完毕
-    UNKNOW_TYPE = 5               # 未知类型
+    CACHE = 2                     # 任务已经被服务器缓存,但是还没有获取
+    PROCESS = 3                   # 任务正在被客户端处理中
+    EXCEPTION = 4                 # 任务处理发生异常
+    OVER = 5                      # 任务已经处理完毕
+    LOST = 6                      # 任务丢弃
+    UNKNOW_TYPE = 7               # 未知类型
     
 ########################################################################
 class NS2_ERROR_CODE:
@@ -104,29 +108,25 @@ class NS2_ERROR_CODE:
     ERROR_DL_FILE = 0x80000004    # 下载文件失败
     ERROR_EXEC = 0x80000005       # 客户端业务失败
     ERROR_ARGV = 0x80000006       # 客户端参数错误
-    ERROR_SIGN = 0x80000007       # 没有对应的标记算法
-    ERROR_FP = 0x80000008         # 没有对应的文件服务器传输协议
+    ERROR_MISS_TOOL = 0x80000007  # 丢失tool工具
+    ERROR_UNKNOW = 0x80000008     # 未知错误
 
 ########################################################################
 class NS2_FILE_INFO:
     """文件存储信息"""
     ID = 0                         # 文件索引
     SIGN = 1                       # 文件的唯一标示
-    SIGN_FUNC = 2                  # 文件标示的算法
-    HOST = 3                       # 文件服务器的地址
-    PORT = 4                       # 服务器链接的端口
-    STYPE = 5                      # 服务类型,通常为ftp
-    USER = 6                       # 服务器的用户名
-    PASSWD = 7                     # 服务器密码
-    PATH = 8                       # 服务器路径
+    HOST = 2                       # 文件服务器的地址
+    PORT = 3                       # 服务器链接的端口
+    USER = 4                       # 服务器的用户名
+    PASSWD = 5                     # 服务器密码
+    PATH = 6                       # 服务器路径
     
     # 表名
     file_tab = ('id',
                 'sign',
-                'sign_func',
                 'host',
                 'port',
-                'stype',
                 'user',
                 'passwd',
                 'path')

@@ -1,0 +1,118 @@
+2014-06-27 15:08:05,195 1945[140735222903568] dbgutils.pyc[line:1415] infoLog[ERROR] hello world
+2014-06-27 15:14:02,161 1970[140735222903568] dbgutils.pyc[line:1415] infoLog[ERROR] hello world
+2014-06-27 15:17:19,520 1977[140735222903568] dbgutils.pyc[line:1415] infoLog[ERROR] hello world
+2014-06-27 15:18:19,857 1981[140735222903568] dbgutils.pyc[line:1415] infoLog[ERROR] hello world
+2014-06-27 15:18:40,200 1988[140735222903568] dbgutils.pyc[line:1415] infoLog[ERROR] hello world
+2014-06-29 17:57:38,314 565[140735167738640] dbgutils.pyc[line:1415] infoLog[ERROR] range() integer end argument expected, got dict.
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2db.py", line 41, in connect
+    self.dbpool = PooledDB(mysql.connector, info)
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/PooledDB.py", line 270, in __init__
+    idle = [self.dedicated_connection() for i in range(mincached)]
+TypeError: range() integer end argument expected, got dict.
+2014-06-29 17:59:11,034 572[140735167738640] dbgutils.pyc[line:1415] infoLog[ERROR] range() integer end argument expected, got dict.
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2db.py", line 41, in connect
+    self.dbpool = PooledDB(mysql.connector, info)
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/PooledDB.py", line 270, in __init__
+    idle = [self.dedicated_connection() for i in range(mincached)]
+TypeError: range() integer end argument expected, got dict.
+2014-06-29 18:10:44,364 579[140735167738640] dbgutils.pyc[line:1415] infoLog[ERROR] range() integer end argument expected, got dict.
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2db.py", line 41, in connect
+    self.dbpool = PooledDB(mysql.connector, maxusage=10, info)
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/PooledDB.py", line 270, in __init__
+    idle = [self.dedicated_connection() for i in range(mincached)]
+TypeError: range() integer end argument expected, got dict.
+2014-07-01 17:05:12,675 1211[140735305028368] dbgutils.pyc[line:1415] infoLog[ERROR] range() integer end argument expected, got dict.
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2db.py", line 41, in connect
+    self.dbpool = PooledDB(mysql.connector, info)
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/PooledDB.py", line 270, in __init__
+    idle = [self.dedicated_connection() for i in range(mincached)]
+TypeError: range() integer end argument expected, got dict.
+2014-07-01 17:10:13,090 1234[140735305028368] dbgutils.pyc[line:1415] infoLog[ERROR] range() integer end argument expected, got dict.
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2db.py", line 41, in connect
+    self.dbpool = PooledDB(mysql.connector, info)
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/PooledDB.py", line 270, in __init__
+    idle = [self.dedicated_connection() for i in range(mincached)]
+TypeError: range() integer end argument expected, got dict.
+2014-07-02 01:04:08,056 2502[140735255954192] dbgutils.pyc[line:1415] infoLog[ERROR] global name 'get_self_ip' is not defined
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2db.py", line 90, in login
+    self.hostname, self.ip = get_self_ip()
+NameError: global name 'get_self_ip' is not defined
+2014-07-02 01:06:46,674 2513[140735255954192] dbgutils.pyc[line:1415] infoLog[ERROR] Ns2DB instance has no attribute 'conn'
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2db.py", line 57, in run_sql
+    conn = self.conn
+AttributeError: Ns2DB instance has no attribute 'conn'
+2014-07-02 01:07:14,049 2518[140735255954192] dbgutils.pyc[line:1415] infoLog[ERROR] 
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2db.py", line 59, in run_sql
+    cur.execute(sql)
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/SteadyDB.py", line 552, in tough_method
+    result = method(*args, **kwargs) # try to execute
+  File "/Library/Python/2.7/site-packages/MySQL_python-1.2.4b4-py2.7-macosx-10.9-intel.egg/MySQLdb/cursors.py", line 202, in execute
+    self.errorhandler(self, exc, value)
+  File "/Library/Python/2.7/site-packages/MySQL_python-1.2.4b4-py2.7-macosx-10.9-intel.egg/MySQLdb/connections.py", line 36, in defaulterrorhandler
+    raise errorclass, errorvalue
+ProgrammingError: (1064, "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '.1.78, just test, <built-in function asctime>)' at line 1")
+2014-07-02 01:07:57,021 2520[140735255954192] dbgutils.pyc[line:1415] infoLog[ERROR] 
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2db.py", line 59, in run_sql
+    cur.execute(sql)
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/SteadyDB.py", line 552, in tough_method
+    result = method(*args, **kwargs) # try to execute
+  File "/Library/Python/2.7/site-packages/MySQL_python-1.2.4b4-py2.7-macosx-10.9-intel.egg/MySQLdb/cursors.py", line 202, in execute
+    self.errorhandler(self, exc, value)
+  File "/Library/Python/2.7/site-packages/MySQL_python-1.2.4b4-py2.7-macosx-10.9-intel.egg/MySQLdb/connections.py", line 36, in defaulterrorhandler
+    raise errorclass, errorvalue
+ProgrammingError: (1064, "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '.1.78, just test)' at line 1")
+2014-07-02 01:09:36,961 2535[140735255954192] dbgutils.pyc[line:1415] infoLog[ERROR] 
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2db.py", line 59, in run_sql
+    cur.execute(sql)
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/SteadyDB.py", line 631, in tough_method
+    raise error # reraise the original error again
+OperationalError: (1136, "Column count doesn't match value count at row 1")
+2014-07-02 01:10:18,826 2542[140735255954192] dbgutils.pyc[line:1415] infoLog[ERROR] 
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2db.py", line 59, in run_sql
+    cur.execute(sql)
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/SteadyDB.py", line 631, in tough_method
+    raise error # reraise the original error again
+OperationalError: (1136, "Column count doesn't match value count at row 1")
+2014-07-02 02:17:39,841 2809[140735255954192] dbgutils.pyc[line:1415] infoLog[ERROR] 
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2db.py", line 59, in run_sql
+    cur.execute(sql)
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/SteadyDB.py", line 631, in tough_method
+    raise error # reraise the original error again
+OperationalError: (1136, "Column count doesn't match value count at row 1")
+2014-07-02 02:18:03,703 2812[140735255954192] dbgutils.pyc[line:1415] infoLog[ERROR] 
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2db.py", line 59, in run_sql
+    cur.execute(sql)
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/SteadyDB.py", line 631, in tough_method
+    raise error # reraise the original error again
+OperationalError: (1136, "Column count doesn't match value count at row 1")
+2014-07-02 02:21:10,479 2823[140735255954192] dbgutils.pyc[line:1415] infoLog[ERROR] 
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2db.py", line 59, in run_sql
+    cur.execute(sql)
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/SteadyDB.py", line 552, in tough_method
+    result = method(*args, **kwargs) # try to execute
+  File "/Library/Python/2.7/site-packages/MySQL_python-1.2.4b4-py2.7-macosx-10.9-intel.egg/MySQLdb/cursors.py", line 202, in execute
+    self.errorhandler(self, exc, value)
+  File "/Library/Python/2.7/site-packages/MySQL_python-1.2.4b4-py2.7-macosx-10.9-intel.egg/MySQLdb/connections.py", line 36, in defaulterrorhandler
+    raise errorclass, errorvalue
+ProgrammingError: (1064, "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'argv_files from tab_task where type = 1 and status = 1' at line 1")
+2014-07-08 16:09:45,789 1796[140735142052624] dbgutils.pyc[line:1415] infoLog[ERROR] 
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2db.py", line 61, in run_sql
+    cur.execute(sql)
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/SteadyDB.py", line 631, in tough_method
+    raise error # reraise the original error again
+OperationalError: (1136, "Column count doesn't match value count at row 1")
