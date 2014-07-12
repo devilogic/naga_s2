@@ -504,10 +504,10 @@ class Ns2DB:
             ts = "%d|%s|%s" % (task_park[0], task_park[1], task_park[2])   # 任务部分
             for one_file in file_park:
                 #sign,host,port,stype,user,passwd,path
-                fs += "%s|%s|%d|%d|%s|%s|%s" % (one_file[0], one_file[1], one_file[2], 
-                                                one_file[3], one_file[4], one_file[5],
-                                                one_file[6])
-            one_task = "%s#%s;" % (ts, fs)
+                fs += "%s|%s|%d|%d|%s|%s|%s;" % (one_file[0], one_file[1], one_file[2], 
+                                                 one_file[3], one_file[4], one_file[5],
+                                                 one_file[6])
+            one_task = "%s#%s," % (ts, fs)
             tasks_string += one_task
             
         return tasks_string
