@@ -14,13 +14,13 @@ class Ns2TaskQueue():
     """任务队列"""
 
     #----------------------------------------------------------------------
-    def __init__(self, max_count=20, block=True, time_out=5):
+    def __init__(self, max_count=20, block=True, time_out=5, retry_time_out=0):
         """Constructor"""
         g_ns2log.info("任务队列分配")
         self.max_count = max_count
         self.time_out = time_out
         self.block = block
-        self.retry_time_out = 0
+        self.retry_time_out = retry_time_out
         self.task_queue_dict = {}
         
     #----------------------------------------------------------------------
@@ -130,16 +130,6 @@ class Ns2TaskQueue():
 
 if __name__ == '__main__':
     #----------------------------------------------------------------------
-    def xxx():
-        try:
-            i = 7
-            i = i / 0
-        except BaseException, e:
-            print("exp")
-            return 1
-        finally:
-            print("fin")
-            
     def test():
         """测试单元"""
         y = xxx()

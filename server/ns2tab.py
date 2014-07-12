@@ -8,32 +8,8 @@ __author__ = 'devilogic'
 
 # 任务类型最大标记
 MAX_TASK_TYPE = 16
-
-#----------------------------------------------------------------------
-def ns2_success(code):
-    """判断是否执行成功"""
-    if code & NS2_ERROR_CODE.ERROR_FAILED:
-        return False
-    return True
-
-#----------------------------------------------------------------------
-_ns2_error_string = ["failed",
-                     "miss file", 
-                     "connect file server failed",
-                     "upload file failed",
-                     "download file failed",
-                     "client exec failed",
-                     "invalid arguments",
-                     "invalid sign",
-                     "invalid file server"]
-
-def ns2_error_string(code):
-    """从错误代码返回错误字符串"""
-    c = code ^ NS2_ERROR_CODE.ERROR_FAILED
-    if c >= len(_ns2_error_string):
-        return "unknow error code"
-    return _ns2_error_string[c]
-    
+DEF_NS2_STYPE = 21 # ftp
+DEF_NS2_SIGN = 1 # MD5
     
 ########################################################################
 class NS2_LOGIN_INFO_TAB:
@@ -94,22 +70,10 @@ class NS2_TASK_STATUS:
     PROCESS = 3                   # 任务正在被客户端处理中
     EXCEPTION = 4                 # 任务处理发生异常
     OVER = 5                      # 任务已经处理完毕
-    LOST = 6                      # 任务丢弃
-    UNKNOW_TYPE = 7               # 未知类型
+    UNKNOW_TYPE = 6               # 未知类型
     
-########################################################################
-class NS2_ERROR_CODE:
-    """任务处理出错代码"""
-    ERROR_SUCCESS = 0             # 成功
-    ERROR_FAILED = 0x80000000     # 失败
-    ERROR_MISS_FILE = 0x80000001  # 命令行所需要的文件在列表中不足
-    ERROR_CONN_FS = 0x80000002    # 链接文件服务器失败
-    ERROR_UP_FILE = 0x80000003    # 上传文件失败
-    ERROR_DL_FILE = 0x80000004    # 下载文件失败
-    ERROR_EXEC = 0x80000005       # 客户端业务失败
-    ERROR_ARGV = 0x80000006       # 客户端参数错误
-    ERROR_MISS_TOOL = 0x80000007  # 丢失tool工具
-    ERROR_UNKNOW = 0x80000008     # 未知错误
+g_ns2_status_process = [0, 30, 50, 70, 100, 100, 0]
+
 
 ########################################################################
 class NS2_FILE_INFO:
@@ -131,7 +95,6 @@ class NS2_FILE_INFO:
                 'passwd',
                 'path')
 
-        
     
     
         

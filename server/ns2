@@ -1,0 +1,18 @@
+#!wing
+#!version=5.0
+##################################################################
+# Wing IDE project file                                          #
+##################################################################
+[project attributes]
+proj.file-list = [loc('ns2.py'),
+                  loc('ns2db.py'),
+                  loc('ns2log.conf'),
+                  loc('ns2log.py'),
+                  loc('ns2mst.py'),
+                  loc('ns2ptl.py'),
+                  loc('ns2tab.py'),
+                  loc('ns2tkcltab.py'),
+                  loc('ns2tkque.py'),
+                  loc('ns2tksrv.py'),
+                  loc('server.ini')]
+proj.file-type = 'shared'
