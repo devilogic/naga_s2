@@ -44,7 +44,7 @@ class Ns2DB:
         """链接数据库"""
         try:
             # 不限制链接数量
-            self.dbpool = PooledDB(MySQLdb, maxshared=ms, maxusage=mu, 
+            self.dbpool = PooledDB(MySQLdb, mincached=20, maxshared=ms, maxusage=mu, 
                                    blocking=True, **info)
             return self.dbpool
 
@@ -390,9 +390,9 @@ class Ns2DB:
     def update_task_status_processbar(self, task_id, st):
         """更新任务状态以及进度条"""
         if st < 0:
-            raise TypeError("st must be >= 0")
-        else if st >= NS2_TASK_STATUS.UNKNOW_TYPE:
-            raise TypeError("st must be < %d" % NS2_TASK_STATUS.UNKNOW_TYPE)
+            raise ValueError("st must be >= 0")
+        elif st >= NS2_TASK_STATUS.UNKNOW_TYPE:
+            raise ValueError("st must be < %d" % NS2_TASK_STATUS.UNKNOW_TYPE)
         
         self.update_task_status(task_id, st)
         self.update_task_processbar(task_id, g_ns2_status_process[st])

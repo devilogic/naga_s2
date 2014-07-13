@@ -20,46 +20,6 @@ from ns2tkcltab import g_tkcltab
 from ns2tksrv import *
 
 global g_ns2db
-########################################################################
-class Ns2Master(Factory):
-    """用于响应客户端发来的包"""
-    protocol = Ns2Protocol
-
-    #----------------------------------------------------------------------
-    def __init__(self):
-        """初始化"""
-        g_ns2log.info("娜迦工厂模块启动")
-
-    #----------------------------------------------------------------------
-    def __del__(self):
-        """析构函数"""
-        pass
-
-
-    #----------------------------------------------------------------------
-    def add_client(self, task_type, pid):
-        """增加客户端"""
-        try:
-            client_address = "%s:%d" % (self.transport.client[0], self.transport.client[1])
-            
-            # 新的客户端
-            new_client(task_type, client_address, pid)
-            
-        except BaseException, e:
-            g_ns2log.exception(e.message)
-            return None
-
-    #----------------------------------------------------------------------
-    def del_client(self, client_address):
-        """当客户端丢失时调用，用于删除客户端,client_address为 ip:port"""
-        if len(g_tkcltab) == 0:
-            return False
-        
-        try:
-            g_tkcltab.del_client_by_hostport(client_address)
-        except BaseException, e:
-            g_ns2log.exception(e.message)
-            return False
 
 ########################################################################
 class Ns2Protocol(LineOnlyReceiver):
@@ -265,7 +225,7 @@ class Ns2Protocol(LineOnlyReceiver):
 
             if command < 0:
                 raise TypeError("client command must be > 0")
-            else if command > NS2_CLIENT_COMMAND.CLIENT_COMMAND_MAX:
+            elif command > NS2_CLIENT_COMMAND.CLIENT_COMMAND_MAX:
                 raise TypeError("client command must be < %d" % NS2_CLIENT_COMMAND.CLIENT_COMMAND_MAX)
 
             handler = self.client_handler[command]
@@ -278,6 +238,48 @@ class Ns2Protocol(LineOnlyReceiver):
         except BaseException, e:
             g_ns2log.exception(e.message)
             g_ns2log.info("娜迦协议处理模块接收数据出错")
+
+
+########################################################################
+class Ns2Master(Factory):
+    """用于响应客户端发来的包"""
+    protocol = Ns2Protocol
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        g_ns2log.info("娜迦工厂模块启动")
+
+    #----------------------------------------------------------------------
+    def __del__(self):
+        """析构函数"""
+        pass
+
+
+    #----------------------------------------------------------------------
+    def add_client(self, task_type, pid):
+        """增加客户端"""
+        try:
+            client_address = "%s:%d" % (self.transport.client[0], self.transport.client[1])
+            
+            # 新的客户端
+            new_client(task_type, client_address, pid)
+            
+        except BaseException, e:
+            g_ns2log.exception(e.message)
+            return None
+
+    #----------------------------------------------------------------------
+    def del_client(self, client_address):
+        """当客户端丢失时调用，用于删除客户端,client_address为 ip:port"""
+        if len(g_tkcltab) == 0:
+            return False
+        
+        try:
+            g_tkcltab.del_client_by_hostport(client_address)
+        except BaseException, e:
+            g_ns2log.exception(e.message)
+            return False
 
 
 if __name__ == '__main__':

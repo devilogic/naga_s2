@@ -9,7 +9,6 @@ import threading
 
 from ns2log import g_ns2log
 
-g_tkcltab = Ns2TaskClientTable()
 ########################################################################
 class Ns2TaskClientTable:
     """任务类型-客户端对应表"""
@@ -123,7 +122,8 @@ class Ns2TaskClientTable:
         finally:
             self.client_lock.release()
     
-    
+ 
+g_tkcltab = Ns2TaskClientTable()  
     
      
         

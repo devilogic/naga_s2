@@ -116,3 +116,55 @@ Traceback (most recent call last):
   File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/SteadyDB.py", line 631, in tough_method
     raise error # reraise the original error again
 OperationalError: (1136, "Column count doesn't match value count at row 1")
+2014-07-12 18:54:38,731 3976[140735279911696] dbgutils.pyc[line:1415] infoLog[ERROR] 'Ns2QueryThread' object has no attribute 'dbpool'
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2tksrv.py", line 54, in Start
+    dbpool = self.master_thread.get_taskdb()
+  File "/Users/devilogic/workspace/naga_s2/server/ns2tksrv.py", line 152, in get_taskdb
+    return self.dbpool
+AttributeError: 'Ns2QueryThread' object has no attribute 'dbpool'
+2014-07-12 18:56:10,750 3983[140735279911696] dbgutils.pyc[line:1415] infoLog[ERROR] global name 'g_dbpool' is not defined
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2tksrv.py", line 54, in Start
+    dbpool = self.master_thread.get_taskdb()
+  File "/Users/devilogic/workspace/naga_s2/server/ns2tksrv.py", line 152, in get_taskdb
+    return g_dbpool
+NameError: global name 'g_dbpool' is not defined
+2014-07-12 18:56:33,694 3988[140735279911696] dbgutils.pyc[line:1415] infoLog[ERROR] 'Ns2QueryThread' object has no attribute 'get_taskdb'
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2tksrv.py", line 54, in Start
+    dbpool = self.master_thread.get_taskdb()
+AttributeError: 'Ns2QueryThread' object has no attribute 'get_taskdb'
+2014-07-13 11:30:33,294 751[4523958272] dbgutils.pyc[line:1415] infoLog[ERROR] No option 'force_task' in section: 'CONTROL'
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2tksrv.py", line 107, in connect_mysql
+    self.force_task = config.getboolean("CONTROL", "force_task") # 获取睡眠时间
+  File "/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/ConfigParser.py", line 368, in getboolean
+    v = self.get(section, option)
+  File "/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/ConfigParser.py", line 618, in get
+    raise NoOptionError(option, section)
+NoOptionError: No option 'force_task' in section: 'CONTROL'
+2014-07-13 12:02:14,583 925[4326354944] dbgutils.pyc[line:1415] infoLog[ERROR] 'database' is an invalid keyword argument for this function
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2db.py", line 61, in run_sql
+    conn = self.dbpool.connection()
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/PooledDB.py", line 331, in connection
+    con = self.steady_connection()
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/PooledDB.py", line 279, in steady_connection
+    *self._args, **self._kwargs)
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/SteadyDB.py", line 134, in connect
+    failures, ping, closeable, *args, **kwargs)
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/SteadyDB.py", line 186, in __init__
+    self._store(self._create())
+  File "/Library/Python/2.7/site-packages/DBUtils-1.1-py2.7.egg/DBUtils/SteadyDB.py", line 190, in _create
+    con = self._creator(*self._args, **self._kwargs)
+  File "/Library/Python/2.7/site-packages/MySQL_python-1.2.4b4-py2.7-macosx-10.9-intel.egg/MySQLdb/__init__.py", line 81, in Connect
+    return Connection(*args, **kwargs)
+  File "/Library/Python/2.7/site-packages/MySQL_python-1.2.4b4-py2.7-macosx-10.9-intel.egg/MySQLdb/connections.py", line 187, in __init__
+    super(Connection, self).__init__(*args, **kwargs2)
+TypeError: 'database' is an invalid keyword argument for this function
+2014-07-13 13:50:08,386 1396[140735145816848] dbgutils.pyc[line:1415] infoLog[ERROR] global name 'connect_info' is not defined
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2tksrv.py", line 146, in connect_mysql
+    connect_info['host'] = ip
+NameError: global name 'connect_info' is not defined
