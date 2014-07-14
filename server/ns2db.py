@@ -19,6 +19,7 @@ from ns2tkque import *
 
 DEF_DBPOOL_MAX_SIZE = 20    # db线程池数量
 DEF_DBPOOL_MAX_USAGE = 20   # 一条单个链接可以重复使用得最大次数
+DEF_DBPOOL_STARTUP_CONNECT = 20 # 在启动时就链接的数量
 
 ########################################################################
 class Ns2DB:
@@ -40,11 +41,11 @@ class Ns2DB:
         """销毁"""
         g_ns2log.info("娜迦数据库管理模块卸载")
 
-    def connect(self, ms=DEF_DBPOOL_MAX_SIZE, mu=DEF_DBPOOL_MAX_USAGE, **info):
+    def connect(self, mic=DEF_DBPOOL_STARTUP_CONNECT, ms=DEF_DBPOOL_MAX_SIZE, mu=DEF_DBPOOL_MAX_USAGE, **info):
         """链接数据库"""
         try:
             # 不限制链接数量
-            self.dbpool = PooledDB(MySQLdb, mincached=20, maxshared=ms, maxusage=mu, 
+            self.dbpool = PooledDB(MySQLdb, mincached=mic, maxshared=ms, maxusage=mu, 
                                    blocking=True, **info)
             return self.dbpool
 
@@ -94,17 +95,27 @@ class Ns2DB:
         try:
             self.note = note
             self.hostname, self.ip = self.get_self_host()
-            sql = "INSERT INTO login_info (name, ip, note, time) VALUES ('%s', '%s', '%s', '%s')" % (self.hostname, self.ip, self.note, now_time)
+            sql = "INSERT INTO %s (%s, %s, %s, %s) VALUES ('%s', '%s', '%s', '%s')" % (NS2_LOGIN_INFO_TAB.table_name,
+                                                                                       NS2_LOGIN_INFO_TAB.login_tab[NS2_LOGIN_INFO_TAB.NAME],
+                                                                                       NS2_LOGIN_INFO_TAB.login_tab[NS2_LOGIN_INFO_TAB.IP],
+                                                                                       NS2_LOGIN_INFO_TAB.login_tab[NS2_LOGIN_INFO_TAB.NOTE],
+                                                                                       NS2_LOGIN_INFO_TAB.login_tab[NS2_LOGIN_INFO_TAB.TIME],
+                                                                                       self.hostname, 
+                                                                                       self.ip, 
+                                                                                       self.note, 
+                                                                                       now_time)
             conn, cur = self.run_sql(sql)
             if conn == None:
                 return False
             
-            cur.close()
-            conn.close()
             return True
         except BaseException, e:
             g_ns2log.exception(e.message)
             return False
+        finally:
+            cur.close()
+            conn.close()            
+            
 
     #----------------------------------------------------------------------
     def fetch_one_task(self, tid):
@@ -118,7 +129,14 @@ class Ns2DB:
         # 获取一条记录
         # 向数据库任务的状态
         try:
-            sql = "SELECT id,argv,argv_files FROM tab_task WHERE type = %d AND status = %d" % (tid, NS2_TASK_STATUS.READY)
+            sql = "SELECT %d,%s,%s FROM %s WHERE %s = %d AND %s = %d" % (NS2_TASK_TAB.task_tab[NS2_TASK_TAB.TASK_ID],
+                                                                         NS2_TASK_TAB.task_tab[NS2_TASK_TAB.ARGV],
+                                                                         NS2_TASK_TAB.task_tab[NS2_TASK_TAB.ARGV_FILES],
+                                                                         NS2_TASK_TAB.table_name,
+                                                                         NS2_TASK_TAB.task_tab[NS2_TASK_TAB.TYPE],
+                                                                         tid, 
+                                                                         NS2_TASK_TAB.task_tab[NS2_TASK_TAB.STATUS],
+                                                                         NS2_TASK_STATUS.READY)
             conn, cur = self.run_sql(sql)
             if conn == None:
                 return None
@@ -126,9 +144,6 @@ class Ns2DB:
             r = cur.fetchone()
             if r == None:
                 return None
-            
-            cur.close()
-            conn.close()            
             
             task_id = r[0]
             argv = r[1]
@@ -154,9 +169,10 @@ class Ns2DB:
             
         except BaseException, e:
             g_ns2log.exception(e.message)
+            return None
+        finally:
             cur.close()
             conn.close()            
-            return None
 
     #----------------------------------------------------------------------
     def fetch_n_task(self, tid, num):
@@ -184,7 +200,15 @@ class Ns2DB:
     def get_file_info(self, fs):
         """获取文件信息从数据库"""
         try:
-            sql = "SELECT sign,host,port,stype,user,passwd,path FROM tab_file WHERE sign='%s'" % fs
+            sql = "SELECT %s,%s,%d,%s,%s,%s FROM %s WHERE %s='%s'" % (NS2_FILE_INFO.file_tab[NS2_FILE_INFO.SIGN],
+                                                                      NS2_FILE_INFO.file_tab[NS2_FILE_INFO.HOST],
+                                                                      NS2_FILE_INFO.file_tab[NS2_FILE_INFO.PORT],
+                                                                      NS2_FILE_INFO.file_tab[NS2_FILE_INFO.USER],
+                                                                      NS2_FILE_INFO.file_tab[NS2_FILE_INFO.PASSWD],
+                                                                      NS2_FILE_INFO.file_tab[NS2_FILE_INFO.PATH],
+                                                                      NS2_FILE_INFO.table_name,
+                                                                      NS2_FILE_INFO.file_tab[NS2_FILE_INFO.SIGN],
+                                                                      fs)
             conn, cur = self.run_sql(sql)
             if conn == None:
                 return None
@@ -193,14 +217,13 @@ class Ns2DB:
             if r == None:
                 return None
             
-            cur.close()
-            conn.close()
             return r
         except BaseException, e:
             g_ns2log.exception(e.message)
-            cur.close()
-            conn.close()            
             return None
+        finally:
+            cur.close()
+            conn.close()
         
 
     #----------------------------------------------------------------------
@@ -225,23 +248,31 @@ class Ns2DB:
     def update_task_processbar(self, task_id, process_bar):
         """更新任务进度"""
         try:
-            sql = "UPDATE tab_task SET process_bar=%d WHERE task_id=%d" % (process_bar, task_id)
+            sql = "UPDATE %s SET %s=%d WHERE %s=%d" % (NS2_TASK_TAB.table_name,
+                                                       NS2_TASK_TAB.task_tab[NS2_TASK_TAB.PROCESS_BAR],
+                                                       process_bar, 
+                                                       NS2_TASK_TAB.task_tab[NS2_TASK_TAB.TASK_ID],
+                                                       task_id)
             conn, cur = self.run_sql(sql)
             if conn == None:
                 return False
             
-            cur.close()
-            conn.close()
             return True
         except BaseException, e:
             g_ns2log.exception(e.message)
-            return False    
+            return False
+        finally:
+            cur.close()
+            conn.close()            
         
     #----------------------------------------------------------------------
     def get_task_rollback(self, task_id):
         """获取回滚次数"""
         try:
-            sql = "SELECT rollback_count FROM tab_task WHERE task_id=%d" % task_id
+            sql = "SELECT %s FROM %s WHERE %s=%d" % (NS2_TASK_TAB.task_tab[NS2_TASK_TAB.ROLLBACK_COUNT],
+                                                     NS2_TASK_TAB.table_name,
+                                                     NS2_TASK_TAB.task_tab[NS2_TASK_TAB.TASK_ID],
+                                                     task_id)
             conn, cur = self.run_sql(sql)
             if conn == None:
                 return False
@@ -253,13 +284,19 @@ class Ns2DB:
             return int(rollback)
         except BaseException, e:
             g_ns2log.exception(e.message)
-            return -1       
+            return -1
+        finally:
+            cur.close()
+            conn.close()            
         
     #----------------------------------------------------------------------
     def dec_task_rollback_c(self, task_id):
         """任务回滚次数减1"""
         try:
-            sql = "SELECT rollback_count FROM tab_task WHERE task_id=%d" % task_id
+            sql = "SELECT %s FROM %s WHERE %s=%d" % (NS2_TASK_TAB.task_tab[NS2_TASK_TAB.ROLLBACK_COUNT],
+                                                     NS2_TASK_TAB.table_name,
+                                                     NS2_TASK_TAB.task_tab[NS2_TASK_TAB.TASK_ID],
+                                                     task_id)
             conn, cur = self.run_sql(sql)
             if conn == None:
                 return False
@@ -272,119 +309,91 @@ class Ns2DB:
             
             # 为0直接退出
             if rollback == 0:
-                cur.close()
-                conn.close()
                 return True
 
             # 减少次数
             rollback = rollback - 1
             
-            sql = "UPDATE tab_task SET rollback_count=%d WHERE task_id=%d" % (rollback, task_id)
+            sql = "UPDATE %s SET %s=%d WHERE %s=%d" % (NS2_TASK_TAB.table_name,
+                                                       NS2_TASK_TAB.task_tab[NS2_TASK_TAB.ROLLBACK_COUNT],
+                                                       rollback, 
+                                                       NS2_TASK_TAB.task_tab[NS2_TASK_TAB.TASK_ID],
+                                                       task_id)
             conn, cur = self.run_sql(sql)
             if conn == None:
                 return False            
-            
-            cur.close()
-            conn.close()
             
             return True
         except BaseException, e:
             g_ns2log.exception(e.message)
             return False
+        finally:
+            cur.close()
+            conn.close()
 
     #----------------------------------------------------------------------
-    def set_task_completed(self, task_id, v):
-        """设置任务已经完成"""
-        if v > 0:
-            v = 1
-        else:
-            v = 0
-            
+    def update_task_client_name(self, task_id, client_name):
+        """更新任务客户端名称"""
         try:
-            sql = "UPDATE tab_task SET completed=%d WHERE task_id=%d" % (v, task_id)
+            sql = "UPDATE %s SET %s='%s' WHERE %s=%d" % (NS2_TASK_TAB.table_name,
+                                                         NS2_TASK_TAB.task_tab[NS2_TASK_TAB.CLIENT_NAME],
+                                                         client_name,
+                                                         NS2_TASK_TAB.task_tab[NS2_TASK_TAB.TASK_ID],
+                                                         task_id)
             conn, cur = self.run_sql(sql)
             if conn == None:
                 return False            
-            
-            cur.close()
-            conn.close()
-            return True
-        except BaseException, e:
-            g_ns2log.exception(e.message)
-            return False	
-
-    #----------------------------------------------------------------------
-    def is_task_completed(self, task_id):
-        """确定任务已经完成"""
-        try:
-            sql = "SELECT completed FROM tab_task WHERE task_id=%d" % task_id
-            conn, cur = self.run_sql(sql)
-            if conn == None:
-                return False            
-            
-            r = cur.fetchone()            
-            
-            cur.close()
-            conn.close()
-            r = bool(r)
-            return r
-        except BaseException, e:
-            g_ns2log.exception(e.message)
-            return False	
-
-
-    #----------------------------------------------------------------------
-    def update_task_server_name(self, task_id, srvname):
-        """更新任务分发服务器名称"""
-        try:
-            sql = "UPDATE tab_task SET server_name='%s' WHERE task_id=%d" % (srvname, task_id)
-            conn, cur = self.run_sql(sql)
-            if conn == None:
-                return False            
-            
-            cur.close()
-            conn.close()
             
             return True
         except BaseException, e:
             g_ns2log.exception(e.message)
-            return False	
+            return False
+        finally:
+            cur.close()
+            conn.close()
 
     #----------------------------------------------------------------------
     def get_task_status(self, task_id):
         """获取任务状态"""
         try:
-            sql = "SELECT status FROM tab_task WHERE task_id=%d" % task_id
+            sql = "SELECT %s FROM %s WHERE %s=%d" % (NS2_TASK_TAB.task_tab[NS2_TASK_TAB.STATUS],
+                                                     NS2_TASK_TAB.table_name,
+                                                     NS2_TASK_TAB.task_tab[NS2_TASK_TAB.TASK_ID],
+                                                     task_id)
             conn, cur = self.run_sql(sql)
             if conn == None:
                 return False            
             
             r = cur.fetchone()
-            
-            cur.close()
-            conn.close()
-            
+                        
             return int(r)
         except BaseException, e:
             g_ns2log.exception(e.message)
             return NS2_TASK_STATUS.UNKNOW_TYPE
+        finally:
+            cur.close()
+            conn.close()
 
     #----------------------------------------------------------------------
     def update_task_status(self, task_id, st):
         """更新任务状态"""
         try:
-            sql = "UPDATE tab_task SET status=%d WHERE task_id=%d" % (st, task_id)
+            sql = "UPDATE %s SET %s=%d WHERE %s=%d" % (NS2_TASK_TAB.table_name,
+                                                       NS2_TASK_TAB.task_tab[NS2_TASK_TAB.STATUS],
+                                                       st,
+                                                       NS2_TASK_TAB.task_tab[NS2_TASK_TAB.TASK_ID],
+                                                       task_id)
             conn, cur = self.run_sql(sql)
             if conn == None:
                 return False            
-            
-            cur.close()
-            conn.close()
-            
+                        
             return True
         except BaseException, e:
             g_ns2log.exception(e.message)
             return False
+        finally:
+            cur.close()
+            conn.close()            
         
     #----------------------------------------------------------------------
     def update_task_status_processbar(self, task_id, st):
@@ -395,76 +404,100 @@ class Ns2DB:
             raise ValueError("st must be < %d" % NS2_TASK_STATUS.UNKNOW_TYPE)
         
         self.update_task_status(task_id, st)
-        self.update_task_processbar(task_id, g_ns2_status_process[st])
+        self.update_task_processbar(task_id, ns2tab.g_ns2_status_process[st])
 
     #----------------------------------------------------------------------
     def update_task_errcode(self, task_id, ec):
         """更新任务出错代码"""
         try:
-            sql = "UPDATE tab_task SET error_code=%d WHERE task_id=%d" % (ec, task_id)
+            sql = "UPDATE %s SET %s=%d WHERE %s=%d" % (NS2_TASK_TAB.table_name,
+                                                       NS2_TASK_TAB.task_tab[NS2_TASK_TAB.ERROR_CODE],
+                                                       ec, 
+                                                       NS2_TASK_TAB.task_tab[NS2_TASK_TAB.TASK_ID],
+                                                       task_id)
             conn, cur = self.run_sql(sql)
             if conn == None:
                 return False            
-            
-            cur.close()
-            conn.close()
-            
+                        
             return True
         except BaseException, e:
             g_ns2log.exception(e.message)
-            return False	
+            return False
+        finally:
+            cur.close()
+            conn.close()            
 
     #----------------------------------------------------------------------
     def update_task_result(self, task_id, result=""):
         """更新任务结果"""
         try:
-            sql = "UPDATE tab_task SET result='%s', WHERE task_id=%d" % (result, task_id)
+            sql = "UPDATE %s SET %s='%s', WHERE %s=%d" % (NS2_TASK_TAB.table_name, 
+                                                          NS2_TASK_TAB.task_tab[NS2_TASK_TAB.RESULT],
+                                                          result, 
+                                                          NS2_TASK_TAB.task_tab[NS2_TASK_TAB.TASK_ID],
+                                                          task_id)
             conn, cur = self.run_sql(sql)
             if conn == None:
                 return False
-            
-            cur.close()
-            conn.close()
-            
+                        
             return True
         except BaseException, e:
             g_ns2log.exception(e.message)
             return False
-        
+        finally:
+            cur.close()
+            conn.close() 
+            
     #----------------------------------------------------------------------
     def update_task_result_files(self, task_id, result_files=""):
         """更新任务结果"""
         try:
-            sql = "UPDATE tab_task SET result_files='%s' WHERE task_id=%d" % (result_files, task_id)
+            sql = "UPDATE %s SET %s='%s' WHERE %s=%d" % (NS2_TASK_TAB.table_name, 
+                                                         NS2_TASK_TAB.task_tab[NS2_TASK_TAB.RESULT_FILES],
+                                                         result_files, 
+                                                         NS2_TASK_TAB.task_tab[NS2_TASK_TAB.TASK_ID],
+                                                         task_id)
             conn, cur = self.run_sql(sql)
             if conn == None:
                 return False
-            
-            cur.close()
-            conn.close()
-            
+                        
             return True
         except BaseException, e:
             g_ns2log.exception(e.message)
             return False
+        finally:
+            cur.close()
+            conn.close()            
         
         
     #----------------------------------------------------------------------
     def insert_file_info(self, info):
         """插入一条文件信息"""
         try:
-            sql = "INSERT INTO tab_file (sign, sign_func, host, port, stype, user, passwd, path) VALUE ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (info[0], info[1], info[2], info[3], info[4], info[5], info[6], info[7])
+            sql = "INSERT INTO %s (sign, host, port, user, passwd, path) VALUE ('%s', '%s', '%s', '%s', '%s', '%s')" % (NS2_FILE_INFO.table_name,
+                                                                                                                        NS2_FILE_INFO.file_tab[NS2_FILE_INFO.SIGN],
+                                                                                                                        NS2_FILE_INFO.file_tab[NS2_FILE_INFO.HOST],
+                                                                                                                        NS2_FILE_INFO.file_tab[NS2_FILE_INFO.PASSWD],
+                                                                                                                        NS2_FILE_INFO.file_tab[NS2_FILE_INFO.USER],
+                                                                                                                        NS2_FILE_INFO.file_tab[NS2_FILE_INFO.PASSWD],
+                                                                                                                        NS2_FILE_INFO.file_tab[NS2_FILE_INFO.PATH],
+                                                                                                                        info[0], 
+                                                                                                                        info[1], 
+                                                                                                                        info[2], 
+                                                                                                                        info[3], 
+                                                                                                                        info[4], 
+                                                                                                                        info[5])
             conn, cur = self.run_sql(sql)
             if conn == None:
                 return False
-            
-            cur.close()
-            conn.close()
-            
+                        
             return True
         except BaseException, e:
             g_ns2log.exception(e.message)
             return False
+        finally:
+            cur.close()
+            conn.close()            
         
     #----------------------------------------------------------------------
     def insert_files_info(self, files):
@@ -483,18 +516,21 @@ class Ns2DB:
         return self.task_queue
     
     #----------------------------------------------------------------------
-    def get_task(self, tid, num=1):
+    def get_task(self, tid, num=1, client_name=""):
         """从任务队列获取任务"""
         tasks = self.task_queue.get_n_task(tid, num, self.retry_it)
         for t in tasks:
             task_id = t[0][0]
+            
+            # 更新客户端名称与进度
+            self.update_task_client_name(task_id, client_name)
             self.update_task_status_processbar(task_id, NS2_TASK_STATUS.PROCESS)
         return tasks
-            
+    
     #----------------------------------------------------------------------
-    def get_task_string(self, tid, num=1):
+    def get_task_string(self, tid, num=1, client_name=""):
         """获取任务并且格式字符串"""
-        tasks = self.get_task(tid, num, self.retry_it)  # 这是一个二元组
+        tasks = self.get_task(tid, num, client_name)  # 这是一个二元组
         tasks_string = ""
         for t in tasks:
             task_park = t[0]   # 三元组

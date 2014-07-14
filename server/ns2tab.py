@@ -8,8 +8,6 @@ __author__ = 'devilogic'
 
 # 任务类型最大标记
 MAX_TASK_TYPE = 16
-DEF_NS2_STYPE = 21 # ftp
-DEF_NS2_SIGN = 1 # MD5
     
 ########################################################################
 class NS2_LOGIN_INFO_TAB:
@@ -20,6 +18,7 @@ class NS2_LOGIN_INFO_TAB:
     NOTE = 3                      # 分发服务器注释
     TIME = 4                      # 登录时间
     
+    table_name = 'login_info'
     # 表名
     login_tab = ('id',
                  'name',
@@ -30,36 +29,36 @@ class NS2_LOGIN_INFO_TAB:
 ########################################################################
 class NS2_TASK_TAB:
     """任务表"""
-    ID = 0                        # 任务ID
+    TASK_ID = 0                   # 任务ID
     TYPE = 1                      # 任务类型
     STATUS = 2                    # 任务状态
-    ERROR = 3                     # 任务出错代码
-    COMPLETED = 4                 # 已经经过处理,为了兼容多台分发服务器
-    SERVER_NAME = 5               # 哪台服务器获取这个任务
-    ROLLBACK_COUNT = 6            # 异常回滚次数
-    ARGV = 7                      # 传递给客户端的参数
+    CLIENT_NAME = 3               # 哪台客户端处理完这个任务"IP:PORT"
+    ROLLBACK_COUNT = 4            # 异常回滚次数
+    ARGV = 5                      # 传递给客户端的参数
     # 这里有个简单的例子
     # -l1 $0 -lx $1 -P $2
     # $1表示在ARGV_FILES中第几个sign值
     # 最多可以一次性处理16个文件
-    ARGV_FILES = 8                # 所需的文件支持md5队列,使用','号分割
-    RESULT = 9                    # 参数返回的结果
-    RESULT_FILES = 10             # 参数返回的文件md5队列,使用','号分割
-    PROCESS_BAR = 11              # 进度条
+    ARGV_FILES = 6                # 所需的文件支持md5队列,使用','号分割
+    RESULT = 7                    # 参数返回的结果
+    RESULT_FILES = 8              # 参数返回的文件md5队列,使用','号分割
+    PROCESS_BAR = 9               # 进度条
+    ERROR_CODE = 10               # 任务出错代码
+    
+    table_name = 'tab_task'    
     
     # 表名
-    task_tab = ('id', 
+    task_tab = ('task_id', 
                 'type',
                 'status',
-                'error',
-                'completed',
-                'server_name',
+                'client_name',
                 'rollback_count',
                 'argv',
                 'argv_files',
                 'result',
                 'result_files',
-                'process_bar')
+                'process_bar',
+                'error_code')
 
 ########################################################################
 class NS2_TASK_STATUS:
@@ -78,7 +77,7 @@ g_ns2_status_process = [0, 30, 50, 70, 100, 100, 0]
 ########################################################################
 class NS2_FILE_INFO:
     """文件存储信息"""
-    ID = 0                         # 文件索引
+    FILE_ID = 0                    # 文件索引
     SIGN = 1                       # 文件的唯一标示
     HOST = 2                       # 文件服务器的地址
     PORT = 3                       # 服务器链接的端口
@@ -86,8 +85,10 @@ class NS2_FILE_INFO:
     PASSWD = 5                     # 服务器密码
     PATH = 6                       # 服务器路径
     
+    table_name = 'tab_file'
+    
     # 表名
-    file_tab = ('id',
+    file_tab = ('file_id',
                 'sign',
                 'host',
                 'port',

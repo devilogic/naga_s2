@@ -22,7 +22,11 @@ class Ns2TaskClientTable:
     #----------------------------------------------------------------------
     def __len__(self):
         """取长度"""    
-        return len(self.clients)
+        try:
+            self.client_lock.acquire()
+            return len(self.clients)
+        finally:
+            self.client_lock.release()
     
     #----------------------------------------------------------------------
     def get_task_id_list(self):
@@ -63,8 +67,9 @@ class Ns2TaskClientTable:
             for task_type in self.clients:
                 client_array = self.clients[task_type]
                 # 如果为空则整只删除这个任务类型
-                if len(client_array):
+                if len(client_array) == 0:
                     dict(self.clients).pop(task_type)
+                    return
                 
                 # 遍历所有再当前任务类型下的 客户端列表
                 for client_address in client_array:

@@ -13,7 +13,7 @@ from twisted.protocols.basic import LineOnlyReceiver
 from twisted.internet import reactor
 
 import ns2tab
-import ns2db
+from ns2db import *
 from ns2ptl import *
 from ns2log import g_ns2log
 from ns2tkcltab import g_tkcltab
@@ -38,7 +38,8 @@ class Ns2Protocol(LineOnlyReceiver):
     #----------------------------------------------------------------------
     def connectionMade(self):
         """链接时调用"""
-        g_ns2log.info("有新的客户端链接 : %s" % self.transport.getPeer())
+        client = self.transport.getPeer()
+        g_ns2log.info("有新的客户端链接 : %s" % client)
 
     #----------------------------------------------------------------------
     def client_none(self, error_code, line):
@@ -50,15 +51,11 @@ class Ns2Protocol(LineOnlyReceiver):
 
 
     #----------------------------------------------------------------------
-    def client_login(self, error_code, line):
+    def client_login(self, error_code, task_type, data):
         """客户端登录时调用"""
         try:
-            if ns2_success(error_code) == False:
-                return False
-            
-            client_type = get_task_type(line)
-            pid = int(get_data(line))
-            self.factory.add_client(client_type, pid)
+            pid = int(data)
+            self.factory.add_client(task_type, pid)
             return True
         except BaseException, e:
             g_ns2log.exception(e.message)
@@ -66,20 +63,19 @@ class Ns2Protocol(LineOnlyReceiver):
             
     
     #----------------------------------------------------------------------
-    def client_request_task(self, error_code, line):
+    def client_request_task(self, error_code, task_type, data):
         """客户端请求任务"""
         try:
-            if ns2_success(error_code) == False:
-                return False
-            
             # 这里直接采用了客户端向服务端发送任务类型，这样快些
             # 否则必须反查任务类型 - 客户端对应表
             
-            task_type = get_task_type(line)
-            task_num = int(get_data(line))     # 获取任务数量
+            task_num = int(data)     # 获取任务数量
+            
+            # 这里应该做task_num的判断
             
             # 从任务队列重获取
-            tasks = g_ns2db.get_task_string(task_type, task_num)
+            client_name = "%s:%d" % (self.transport.client[0], self.transport.client[1])
+            tasks = g_ns2db.get_task_string(task_type, task_num, client_name)
             
             # 发送给客户端
             make_command(NS2_SERVER_COMMAND.SERVER_TASK_READY, 
@@ -90,7 +86,7 @@ class Ns2Protocol(LineOnlyReceiver):
             return False
     
     #----------------------------------------------------------------------
-    def client_handle_task(self, task_id, error_code, line):
+    def client_handle_task(self, error_code, task_id, data):
         """客户端完成第一阶段处理"""
         cmd = 0
         # 任务第一次被处理
@@ -122,34 +118,24 @@ class Ns2Protocol(LineOnlyReceiver):
         return cmd
         
     #----------------------------------------------------------------------
-    def client_task_completed_1(self, error_code, line):
+    def client_task_completed_1(self, error_code, task_id, data):
         """客户端完成第一阶段,数据部分为结果,按照需要设置"""
         try:
-            cmd = 0
-            task_id = get_task_id(line)
-            # 这里这段代码是为了防止两个以及两个以上分发服务器共同访问一个数据库时造成访问
-            # 冲突
-            # 首先判断是否这个任务已经被处理过
-            already_handled = g_ns2db.is_task_completed(task_id)
-            if already_handled:
-                # 查询是上一次处理的状态,如果是成功,则丢弃任务。
-                # 否则继续处理
-                status = g_ns2db.get_task_status(task_id)
-                if status != NS2_TASK_STATUS.OVER:                    
-                    cmd = self.client_handle_task(task_id, error_code, line)
-                else:
-                    # 上一次成功则ignore掉它
-                    cmd = NS2_SERVER_COMMAND.SERVER_TASK_IGNORE
+            # 查询是上一次处理的状态,如果是成功,则丢弃任务。
+            # 否则继续处理
+            status = g_ns2db.get_task_status(task_id)
+            if status != NS2_TASK_STATUS.OVER:                    
+                cmd = self.client_handle_task(error_code, task_id, data)
             else:
-                # 第一次处理
-                cmd = self.client_handle_task(task_id, error_code, line)
+                # 上一次成功则ignore掉它
+                cmd = NS2_SERVER_COMMAND.SERVER_TASK_IGNORE
             
             # 发送给客户端
-            result = get_data(line)
+            result = data
             if len(result):
                 # 更新结果到数据库
                 g_ns2db.update_task_result(task_id, result)
-                
+            
             tasks = make_command(cmd, NS2_ERROR_CODE.ERROR_SUCCESS, "")
             self.transport.write(tasks)
             
@@ -158,24 +144,23 @@ class Ns2Protocol(LineOnlyReceiver):
             return False
 
     #----------------------------------------------------------------------
-    def client_task_completed_2(self, error_code, line):
+    def client_task_completed_2(self, error_code, task_id, data):
         """客户端完成第二阶段,数据部分为文件列表"""
         try:
-            task_id = get_task_id(line)
             # 查询客户端返回是否上传成功
             if ns2_success(error_code) == False:
-                self.client_handle_task(task_id, error_code, line)
+                self.client_handle_task(task_id, error_code, task_id, data)
             else:
-                result_files = get_data(line)
+                result_files = data
                 file_signs = []
                 r_info = []
                 if len(result_files):
                     result_files_list = str(result_files).split(",")
                     # 遍历所有任务文件
                     for one_result_file in result_files_list:
-                        # 取出8个字段
+                        # 取出6个字段
                         r = str(one_result_file).split('|')
-                        if len(r) != 8:
+                        if len(r) != 6:
                             # 出错,这里先不做处理
                             g_ns2log.error("客户端发来的结果文件缺少字段")
                             return False
@@ -207,7 +192,7 @@ class Ns2Protocol(LineOnlyReceiver):
     #----------------------------------------------------------------------
     def lineReceived(self, line):
         """接收到一行数据时调用,以'\r\n'结尾的行
-        [命令]:[任务id][出错代码]:[返回的一些结果,根据命令不同而不同]
+        [命令]:[任务id]:[出错代码]:[返回的一些结果,根据命令不同而不同]
         命令与出错代码必须存在,而数据不一定存在。
         [命令]
         客户端注册                  1
@@ -217,23 +202,46 @@ class Ns2Protocol(LineOnlyReceiver):
         """
         try:
             g_ns2log.info("接收到数据 : %s" % line)
+            # 判断是否符合协议规则,不符合直接返回
+            if check_client_command(line) == False:
+                return
+            
+            # 获取命令
             command = get_command(line)
+            if command == None:
+                return
+            # 获取task_x
+            task_x = get_task_id(line)
+            if task_x == None:
+                return
+            
+            # 获取出错代码
             errcode = get_errcode(line)
-
+            if errcode == None:
+                return
+            
+            # 获取数据
+            data = get_data(line)
+            if data == None:
+                return
+            
+            # 如果客户端返回出错
             if ns2_success(errcode) == False:
                 g_ns2log.error("接收到错误代码 : (%s)%x" % ns2tab.ns2_error_string(errcode), errcode)
 
+            # 检验命令合法性
             if command < 0:
-                raise TypeError("client command must be > 0")
+                raise ValueError("client command must be > 0")
             elif command > NS2_CLIENT_COMMAND.CLIENT_COMMAND_MAX:
-                raise TypeError("client command must be < %d" % NS2_CLIENT_COMMAND.CLIENT_COMMAND_MAX)
+                raise ValueError("client command must be < %d" % NS2_CLIENT_COMMAND.CLIENT_COMMAND_MAX)
 
+            # 进行处理
             handler = self.client_handler[command]
-            ret = handler(errcode, line)
+            ret = handler(errcode, task_x, data)
             
             # 处理出错
             if ret == False:
-                pass
+                return
                 
         except BaseException, e:
             g_ns2log.exception(e.message)
@@ -243,8 +251,6 @@ class Ns2Protocol(LineOnlyReceiver):
 ########################################################################
 class Ns2Master(Factory):
     """用于响应客户端发来的包"""
-    protocol = Ns2Protocol
-
     #----------------------------------------------------------------------
     def __init__(self):
         """初始化"""
@@ -255,6 +261,10 @@ class Ns2Master(Factory):
         """析构函数"""
         pass
 
+    #----------------------------------------------------------------------
+    def buildProtocol(self, addr):
+        """建立协议"""
+        return Ns2Protocol(self)
 
     #----------------------------------------------------------------------
     def add_client(self, task_type, pid):
@@ -263,7 +273,7 @@ class Ns2Master(Factory):
             client_address = "%s:%d" % (self.transport.client[0], self.transport.client[1])
             
             # 新的客户端
-            new_client(task_type, client_address, pid)
+            g_tkcltab.new_client(task_type, client_address, pid)
             
         except BaseException, e:
             g_ns2log.exception(e.message)

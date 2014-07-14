@@ -11,6 +11,7 @@ from ns2log import g_ns2log
 ########################################################################
 class NS2_CLIENT_COMMAND:
     """客户端向服务器发送的命令"""
+    CLIENT_NONE = 0
     CLIENT_LOGIN = 1                  # 数据为客户端信息
     CLIENT_REQUEST_TASK = 2           # 数据为具体要获取的任务数量
     CLIENT_TASK_COMPLETED_1 = 3       # 无数据
@@ -36,11 +37,8 @@ class NS2_ERROR_CODE:
     ERROR_DL_FILE = 0x80000004    # 下载文件失败
     ERROR_EXEC = 0x80000005       # 客户端业务失败
     ERROR_ARGV = 0x80000006       # 客户端参数错误
-    ERROR_FILE_SIGN = 0x80000007  # 文件摘要算法无效
-    ERROR_FS = 0x80000008         # 无效的文件传输算法
-    ERROR_MISS_TOOL = 0x80000009  # 丢失tool工具
-    ERROR_UNKNOW = 0x8000000a     # 未知错误
-    
+    ERROR_MISS_TOOL = 0x80000007  # 丢失tool工具
+    ERROR_UNKNOW = 0x80000008     # 未知错误
     
 #----------------------------------------------------------------------
 def ns2_success(code):
@@ -57,8 +55,6 @@ _ns2_error_string = ["failed",
                      "download file failed",
                      "client exec failed",
                      "invalid arguments",
-                     "invalid sign",
-                     "invalid file server",
                      "miss tool"]
     
 def ns2_error_string(code):
@@ -68,6 +64,21 @@ def ns2_error_string(code):
         return "unknow error code"
     return _ns2_error_string[c]
 
+    
+#----------------------------------------------------------------------
+import re
+def check_client_command(line):
+    """检查一条客户端发来的命令是否合法"""
+    try:
+        # xxx:yyy:zzz:000
+        match = re.match(r'.*:.*:.*:.*', line)
+        if match:
+            return True
+        else:
+            return False
+    except BaseException, e:
+        g_ns2log.exception(e.message)
+        return False
     
 #----------------------------------------------------------------------
 def make_command(cmd, errcode, data):

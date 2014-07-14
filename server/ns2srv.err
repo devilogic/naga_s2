@@ -168,3 +168,30 @@ Traceback (most recent call last):
   File "/Users/devilogic/workspace/naga_s2/server/ns2tksrv.py", line 146, in connect_mysql
     connect_info['host'] = ip
 NameError: global name 'connect_info' is not defined
+2014-07-13 14:07:40,402 1526[140735145816848] dbgutils.pyc[line:1415] infoLog[ERROR] invalid literal for int() with base 10: 'fdafdsafsda'
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2ptl.py", line 85, in get_command
+    return int(s[0])
+ValueError: invalid literal for int() with base 10: 'fdafdsafsda'
+2014-07-13 14:07:48,171 1526[140735145816848] dbgutils.pyc[line:1415] infoLog[ERROR] list index out of range
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2ptl.py", line 122, in get_errcode
+    return int(s[2])
+IndexError: list index out of range
+2014-07-13 14:08:00,346 1526[140735145816848] dbgutils.pyc[line:1415] infoLog[ERROR] unsupported operand type(s) for &: 'NoneType' and 'int'
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2mst.py", line 223, in lineReceived
+    if ns2_success(errcode) == False:
+  File "/Users/devilogic/workspace/naga_s2/server/ns2ptl.py", line 48, in ns2_success
+    if code & NS2_ERROR_CODE.ERROR_FAILED:
+TypeError: unsupported operand type(s) for &: 'NoneType' and 'int'
+2014-07-14 16:51:09,339 2127[140735149499152] dbgutils.pyc[line:1415] infoLog[ERROR] invalid literal for int() with base 10: 'ffff'
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2ptl.py", line 96, in get_command
+    return int(s[0])
+ValueError: invalid literal for int() with base 10: 'ffff'
+2014-07-14 16:51:48,880 2127[140735149499152] dbgutils.pyc[line:1415] infoLog[ERROR] invalid literal for int() with base 10: ''
+Traceback (most recent call last):
+  File "/Users/devilogic/workspace/naga_s2/server/ns2ptl.py", line 96, in get_command
+    return int(s[0])
+ValueError: invalid literal for int() with base 10: ''
